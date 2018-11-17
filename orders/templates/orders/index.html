@@ -1,0 +1,45 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+	Orders
+{% endblock %}
+
+{% block body %}
+	<style>
+		.flex-container {
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			align-content: stretch;
+		}
+		.flex-container > div {
+			background-color: #f1f1f1;
+			width: 200px;
+			margin: 10px;
+			text-align: center;
+			line-height: 75px;
+			font-size: 30px;
+		}
+	</style>
+	<p>Currently logged in as <b>{{ user.username }}</b></p>
+	<a href="{% url 'logout' %}">Log out</a>
+	<h1>Orders</h1>
+
+	<h2>Pizzas</h2>
+	<div class="flex-container">
+	{% for pizza_t in pizza_types %}
+		<div>
+			{{ pizza_t[1] }}<br>
+			{{ pizza_sizes[0][1] }} {{  }}
+			{{ pizza_sizes[1][1] }}
+		</div>
+	{% endfor %}
+	</div>
+
+	<h2>Toppings</h2>
+	<ul>	
+	{% for topping in toppings %}
+		<li>{{ topping }}</li>
+	{% endfor %}
+	</ul>
+{% endblock %}
