@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 
@@ -10,21 +11,28 @@ class Topping(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-class PizzaSize(models.Model):
-    name = models.CharField(max_length=32)
-    label = models.CharField(max_length=64)
-
 class PizzaType(models.Model):
     name = models.CharField(max_length=32)
     label = models.CharField(max_length=64)
+    def __str__(self):
+        return f"{self.label}"
+
+class MenuItem_Pizza(models.Model):
+    item_type = models.ForeignKey('PizzaType', on_delete=models.CASCADE)
+    small_price = models.FloatField(default=0.0)
+    large_price = models.FloatField(default=0.0)
+    number_of_toppings = models.SmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    def __str__(self):
+        return f"{self.item_type}, small: ${self.small_price}, large: ${self.large_price}, toppings: {self.number_of_toppings}"
 
 class Pizza(models.Model):
-    # S = 'SMALL'
-    # L = 'LARGE'
-    # SIZES = (
-    #         (S, 'Small'),
-    #         (L, 'Large')
-    #     )
+    S = 'SMALL'
+    L = 'LARGE'
+    SIZES = (
+            (S, 'Small'),
+            (L, 'Large')
+        )
     # REGULAR = 'REGULAR'
     # _1TOPPING = '_1TOPPING'
     # _2TOPPING = '_2TOPPING'
@@ -36,17 +44,12 @@ class Pizza(models.Model):
     #         (_3TOPPING, '3 Toppings')
     #     )
 
-    
-    tmp_list = [ (_size.name, _size.label) for _size in PizzaSize.objects.all()]
-    SIZES = tuple(tmp_list)
 
-    tmp_list = [ (_type.name, _type.label) for _type in PizzaType.objects.all()]
-    TYPES = tuple(tmp_list)
-
-    name = models.CharField(max_length=64, default=TYPES[0][0], choices=TYPES)
-    size = models.CharField(max_length=64, default=SIZES[0][0], choices=SIZES)
+    name = models.ForeignKey('PizzaType', on_delete=models.CASCADE)
+    size = models.CharField(max_length=64, default=S, choices=SIZES)
     price = models.FloatField(default=0.0)
-    toppings = models.ManyToManyField(Topping, related_name="in_pizza", blank=True)
+    toppings = models.ManyToManyField(Topping, related_name="toppings", blank=True)
+    number_of_toppings = models.SmallIntegerField()
 
     def __str__(self):
         return f"{self.get_name_display()} - {self.get_size_display()} pizza (${self.price})"

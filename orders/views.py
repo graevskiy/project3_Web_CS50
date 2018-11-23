@@ -2,19 +2,19 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.urls import reverse
-from .models import Pizza, Topping
+from .models import Pizza, Topping, MenuItem_Pizza
 
 # Create your views here.
 def index(request):
 
     if not request.user.is_authenticated:
         return render(request, "orders/login.html")
+
     context = {
         "user": request.user,
-        "pizzas": Pizza.objects.all(),
-        "pizza_types": Pizza.TYPES,
-        "pizza_sizes": Pizza.SIZES,
-        "toppings": Topping.objects.all()
+        "toppings": Topping.objects.all(),
+        "pizza_items": MenuItem_Pizza.objects.all(),
+        "pizza_sizes": Pizza.SIZES
     }
     return render(request, "orders/index.html", context)
     # return HttpResponse("Project 3: TODO")

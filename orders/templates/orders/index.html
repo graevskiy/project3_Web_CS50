@@ -25,21 +25,46 @@
 	<a href="{% url 'logout' %}">Log out</a>
 	<h1>Orders</h1>
 
-	<h2>Pizzas</h2>
-	<div class="flex-container">
-	{% for pizza_t in pizza_types %}
-		<div>
-			{{ pizza_t[1] }}<br>
-			{{ pizza_sizes[0][1] }} {{  }}
-			{{ pizza_sizes[1][1] }}
-		</div>
-	{% endfor %}
-	</div>
+	{% if pizza_items %}
 
-	<h2>Toppings</h2>
-	<ul>	
-	{% for topping in toppings %}
-		<li>{{ topping }}</li>
-	{% endfor %}
-	</ul>
+		<h2>Pizzas</h2>
+
+		<div class="flex-container">
+		{% for pizza_t in pizza_items %}
+			<div>
+				<p>{{ pizza_t.item_type }}</p>
+				{% for pizza_size in pizza_sizes %}
+					{% ifequal pizza_size.0 'SMALL' %}
+						<p>{{ pizza_size.1 }}: ${{ pizza_t.small_price }}</p>
+					{% else %}
+						<p>{{ pizza_size.1 }}: ${{ pizza_t.large_price }}</p>
+					{% endifequal %}
+				{% endfor %}
+				{% if pizza_t.number_of_toppings > 0 %}
+					<p>Toppings</p>
+					<select>
+						{% for topping in toppings %}
+							<option value="{{ topping }}">{{ topping }}</option>
+						{% endfor %}
+					</select>
+					{% if pizza_t.number_of_toppings > 1 %}
+					<select>
+						{% for topping in toppings %}
+							<option value="{{ topping }}">{{ topping }}</option>
+						{% endfor %}
+					</select>
+					{% endif %}
+				{% endif %}
+			</div>
+		{% endfor %}
+		</div>
+
+	{% endif %}
+	
+
+
+	
+	
+
+
 {% endblock %}
