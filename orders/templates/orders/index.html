@@ -20,9 +20,32 @@
 			line-height: 75px;
 			font-size: 30px;
 		}
+		.flex-container ul {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+		}
+		.flex-container p {
+			margin: 0;
+		}
+		.flex-container ul input[type="radio"]:checked + label {
+			border: 1px solid black;
+			background-color: rgb(0, 153, 0);
+		}
+		.flex-container label {
+			cursor: pointer;
+			box-sizing: border-box;
+			padding: 5px 5px;			
+		}
+		.product_size {
+			position: absolute;
+			left: -9999px;
+		}
 	</style>
+	
 	<p>Currently logged in as <b>{{ user.username }}</b></p>
 	<a href="{% url 'logout' %}">Log out</a>
+
 	<h1>Orders</h1>
 
 	{% if pizza_items %}
@@ -33,27 +56,30 @@
 		{% for pizza_t in pizza_items %}
 			<div>
 				<p>{{ pizza_t.item_type }}</p>
+				<ul>
 				{% for pizza_size in pizza_sizes %}
-					{% ifequal pizza_size.0 'SMALL' %}
-						<p>{{ pizza_size.1 }}: ${{ pizza_t.small_price }}</p>
-					{% else %}
-						<p>{{ pizza_size.1 }}: ${{ pizza_t.large_price }}</p>
+					{% ifequal pizza_size.0 'SMALL' %}						
+						<li>							
+							<input type="radio" class="product_size" name="pizza_size" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}">
+							<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.small_price }}</label>
+						</li>
+					{% else %}				
+						<li>
+							<input type="radio" class="product_size" name="pizza_size" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}">
+							<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.large_price }}</label>
+						</li>
 					{% endifequal %}
 				{% endfor %}
+				</ul>
 				{% if pizza_t.number_of_toppings > 0 %}
-					<p>Toppings</p>
-					<select>
+					<p>Toppings ({{ pizza_t.number_of_toppings }})</p>
+					<select size = "{{ toppings.count }}">
 						{% for topping in toppings %}
-							<option value="{{ topping }}">{{ topping }}</option>
+							<option value="{{ topping.id }}">{{ topping }}</option>
 						{% endfor %}
 					</select>
-					{% if pizza_t.number_of_toppings > 1 %}
-					<select>
-						{% for topping in toppings %}
-							<option value="{{ topping }}">{{ topping }}</option>
-						{% endfor %}
-					</select>
-					{% endif %}
+				{% else %}
+					<p>No Toppings</p>
 				{% endif %}
 			</div>
 		{% endfor %}
