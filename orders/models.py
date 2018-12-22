@@ -52,7 +52,7 @@ class Pizza(models.Model):
     number_of_toppings = models.SmallIntegerField()
 
     def __str__(self):
-        return f"{self.get_name_display()} - {self.get_size_display()} pizza (${self.price})"
+        return f"{self.name} - {self.get_size_display()} pizza (${self.price})"
 
 class Sub(models.Model):
     S = 'SMALL'

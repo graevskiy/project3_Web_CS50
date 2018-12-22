@@ -1,8 +1,9 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.urls import reverse
-from .models import Pizza, Topping, MenuItem_Pizza
+from django.core import serializers
+from .models import Pizza, Topping, MenuItem_Pizza, PizzaType
 
 # Create your views here.
 def index(request):
@@ -32,3 +33,15 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return render(request, "orders/login.html", {"message": "You were logged out."})
+
+def cart_update(request):
+    """ update Cart model """
+
+    _type = PizzaType.objects.get(name=request.POST['pizza_type'])
+    menu_item = MenuItem_Pizza.objects.get(pk=request.POST['pizza_id'])
+    size = request.POST['pizza_size_'+_type.name]
+    number_of_toppings = request.POST.get('topping_'+_type.name, 0)
+    #price = menu_item._meta.get_field(size+'_price')
+    pizza = Pizza.objects.create(name=_type, size=size, number_of_toppings=number_of_toppings)
+
+    return HttpResponse(serializers.serialize("json", [pizza,menu_item]), content_type="application/json")

@@ -17,7 +17,7 @@
 			width: 200px;
 			margin: 10px;
 			text-align: center;
-			line-height: 75px;
+			line-height: 50px;
 			font-size: 30px;
 		}
 		.flex-container ul {
@@ -28,7 +28,8 @@
 		.flex-container p {
 			margin: 0;
 		}
-		.flex-container ul input[type="radio"]:checked + label {
+		.flex-container ul input[type="radio"]:checked + label,
+		.flex-container ul input[type="checkbox"]:checked + label {
 			border: 1px solid black;
 			background-color: rgb(0, 153, 0);
 		}
@@ -37,9 +38,12 @@
 			box-sizing: border-box;
 			padding: 5px 5px;			
 		}
-		.product_size {
+		.product_size, .topping {
 			position: absolute;
 			left: -9999px;
+		}
+		.pizza_descr {
+			height: 600px;
 		}
 	</style>
 	
@@ -56,33 +60,49 @@
 		{% for pizza_t in pizza_items %}
 			<div>
 				<p>{{ pizza_t.item_type }}</p>
-				<ul>
-				{% for pizza_size in pizza_sizes %}
-					{% ifequal pizza_size.0 'SMALL' %}						
-						<li>							
-							<input type="radio" class="product_size" name="pizza_size" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}">
-							<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.small_price }}</label>
-						</li>
-					{% else %}				
-						<li>
-							<input type="radio" class="product_size" name="pizza_size" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}">
-							<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.large_price }}</label>
-						</li>
-					{% endifequal %}
-				{% endfor %}
-				</ul>
-				{% if pizza_t.number_of_toppings > 0 %}
-					<p>Toppings ({{ pizza_t.number_of_toppings }})</p>
-					<select size = "{{ toppings.count }}">
-						{% for topping in toppings %}
-							<option value="{{ topping.id }}">{{ topping }}</option>
+				<div class="pizza_descr">
+					<form id="pizza_{{ pizza_t.item_type.name }}">
+						{% csrf_token %}						
+						<input type="hidden" name="pizza_id" value="{{ pizza_t.pk }}">
+						<ul>
+						{% for pizza_size in pizza_sizes %}
+							{% ifequal pizza_size.0 'SMALL' %}						
+								<li>							
+									<input type="radio" class="product_size" name="pizza_size_{{ pizza_t.item_type.name }}" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}" checked>
+									<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.small_price }}</label>
+								</li>
+							{% else %}				
+								<li>
+									<input type="radio" class="product_size" name="pizza_size_{{ pizza_t.item_type.name }}" id="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}" value="{{ pizza_size.0 }}">
+									<label for="pizza_size_{{ pizza_t.item_type.name }}_{{pizza_size.0}}">{{ pizza_size.1 }}: ${{ pizza_t.large_price }}</label>
+								</li>
+							{% endifequal %}
 						{% endfor %}
-					</select>
-				{% else %}
-					<p>No Toppings</p>
-				{% endif %}
-			</div>
-		{% endfor %}
+						</ul>
+						<hr>
+						{% if pizza_t.number_of_toppings > 0 %}
+							<p>Toppings ({{ pizza_t.number_of_toppings }})</p>
+							<ul onchange="keep_count_checked_2.call(this, event)" data-number="{{ pizza_t.number_of_toppings }}">
+								{% for topping in toppings %}
+									<li>
+										<input type="checkbox" class="topping" name="topping_{{ pizza_t.item_type.name }}" id="{{ topping.id }}_{{ pizza_t.item_type.name }}" value="{{ topping.id }}">
+										<label for="{{ topping.id }}_{{ pizza_t.item_type.name }}">{{ topping }}</label>
+									</li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							<p>No Toppings</p>
+						{% endif %}
+					</form>
+				</div>
+				<hr>
+				<div class="pizza_buy" onclick="add_to_cart.call(this, event)">
+					<button type="button">
+						<span>Add to Cart</span>
+					</button>
+				</div>
+			</div>			
+		{% endfor %}		
 		</div>
 
 	{% endif %}
@@ -90,7 +110,40 @@
 
 
 	
-	
+<script type="text/javascript">
+
+	function keep_count_checked_2(){
+		// event.target
+		let checked_checkboxes = this.querySelectorAll('.topping:checked');
+		if (checked_checkboxes.length > this.dataset['number'] )
+		{
+			event.target.checked = false;
+		}
+	}
+
+	function add_to_cart(){
+		// do ajax to cart_update view
+
+		let request = new XMLHttpRequest();
+
+		let url = "{% url 'cart_update' %}";
+
+		let pizza_item = this.parentElement;
+
+		let data = new FormData(pizza_item.getElementsByTagName('form')[0]);
+
+		let csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+		request.open("POST", url);
+		request.setRequestHeader("X-CSRFToken", csrftoken);		
+		request.onload = function(){
+			// request.responseText - in JSON format
+			let aa = JSON.parse(request.responseText)
+		}
+		request.send(data);
+	}
+
+</script>
 
 
 {% endblock %}
